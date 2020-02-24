@@ -1,25 +1,14 @@
 #!/usr/bin/env bash
 
 # ===============================================================================
-#          FILE:  build.sh
-#
-#         USAGE:  build [<ojs>]
+#          FILE:  build-dev.sh
 #
 #   DESCRIPTION:  A script to generate the folder structure and required
-#                 files to run a full OJS stack.
+#                 files to run a containerised development version of OJS.
 #
-#    PARAMETERS:
-#  <ojs>:  (optional) The release version that you like to generate.
-#                 If any, all the existing versions will be created.
-#  REQUIREMENTS:  ---
-#     TODO/BUGS:  ---
-#         NOTES:  ---
-#        AUTHOR:  Dulip Withanage, David Cormier, Marc Bria.
+#        AUTHOR:  Daniel Nüst
 #  ORGANIZATION:  Public Knowledge Project (PKP)
 #       LICENSE:  GPL 3
-#       CREATED:  04/02/2020 23:50:15 CEST
-#       UPDATED:  05/02/2020 19:52:25 CEST
-#      REVISION:  1.0
 #===============================================================================
 
 set -Eeuo pipefail
@@ -27,6 +16,16 @@ set -Eeuo pipefail
 cd "$(dirname "$(readlink -f "$BASH_SOURCE")")"
 
 printf "\n\nBUILDING OJS DEV DOCKER STACK\n"
-printf "=============================\n\n"
 
-docker build --tag ojs:master versions/master/alpine/apache/php7/
+mkdir -p "versions/dev"
+cp "templates/common/env" "versions/dev/.env"
+cp "templates/exclude.list" "versions/dev/exclude.list"
+#cp "templates/helpers/config-dev.inc.php" "versions/dev/config-dev.inc.php"
+cp "templates/dockerFiles/Dockerfile.dev" "versions/dev/Dockerfile.dev"
+
+ojs='master'
+sed -e "s!%%OJS_VERSION%%!$ojs!g" \
+    "templates/dockerComposes/docker-compose-dev.template" \
+    > "versions/dev/docker-compose.yml"
+
+printf "\nBUILT files into versions/dev\n"

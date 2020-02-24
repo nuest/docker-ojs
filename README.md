@@ -124,6 +124,32 @@ Any custom PHP configuration can be made in the file */etc/php{5,7}/conf.d/0-ojs
 There are some optimized variables already, you can check them within each version directory, e.g. `versions/<your version>/alpine/apache/php7/root/etc/php7/conf.d/0-ojs.ini`.
 Note that this file is copied into the Docker image at build time and if you change it you must rebuild the image for changes to take effect.
 
+## Containerised development environment - WORK IN PROGRESS
+
+Setting up a local development environment can be complicated for newcomers or people who don't regularly write code for OJS.
+Therefore the following development set-up uses containers to mount the locally developed PHP files into a container and reduces the requirements on the development machine to Docker.
+It also supports debugging!
+
+The following workflow expects you to have the OJS project repository `ojs` next to the `docker-ojs` directory, so that in the file `versions/dev/docker-compose.yml`, the relative resolution of the OJS source files works.
+Note that the OJS source code must NOT include a file `config.inc.php`, as that configuration would interfere with the configuration required in the container.
+
+Xdebug
+
+https://github.com/martomo/SublimeTextXdebug/issues/162
+https://gist.github.com/ralphschindler/535dc5916ccbd06f53c1b0ee5a868c93
+https://www.ashsmith.io/docker/get-xdebug-working-with-docker-for-mac/
+
+Need to get "host" IP mechanism working reliably: `/sbin/ip route|awk '/default/ { print $3 }'` from within the container [gives me the host IP](https://stackoverflow.com/questions/22944631/how-to-get-the-ip-address-of-the-docker-host-from-inside-a-docker-container)
+
+Get the xdebug logs in the running container:
+
+```bash
+docker exec -it ojs-dev_app cat /tmp/xdebug.log
+```
+
+- https://xdebug.org/docs/all_settings
+- [phpMyAdmin](https://hub.docker.com/r/phpmyadmin/phpmyadmin) under http://localhost:8088/index.php with user/login `ojs`/`ojs`.
+
 ## License
 
 GPL3 © [PKP](https://github.com/pkp)

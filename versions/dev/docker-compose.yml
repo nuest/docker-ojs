@@ -1,0 +1,58 @@
+# File: docker-compose.yml
+# Access via "http://localhost:8081"
+#
+# Call example:
+# $ docker-compose up
+
+version: "3.6"
+
+services:
+  db:
+    image: mariadb:10.2
+    env_file:
+      - .env
+    container_name: "ojs-dev_db"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    restart: always
+
+  pma:
+    image: phpmyadmin/phpmyadmin
+    env_file:
+      - .env
+    container_name: "ojs-dev_pma"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      PMA_HOST: db
+    ports:
+      - "8088:80"
+    depends_on:
+      - db
+
+  ojs:
+    image: ojs-dev
+    build:
+      context: ./
+      dockerfile: Dockerfile.dev
+    env_file:
+      - .env
+    container_name: "ojs-dev_app"
+    hostname: "ojs"
+    restart: always
+    ports:
+      - "${HTTP_PORT}:80"
+      - "${HTTPS_PORT}:443"
+    volumes:
+      - /etc/localtime:/etc/localtime
+      # Volume mappings for OJS source code and configuration
+      - ../../../ojs:/var/www/html/
+      # FIXME: need to get ojs-cli-install to work
+      #- ./config-dev.inc.php:/var/www/html/config.inc.php
+      # Volume mappings for plugin development
+      #- ~/git/my-plugin:/var/www/html/plugins
+    depends_on:
+      - db
+    restart: always
